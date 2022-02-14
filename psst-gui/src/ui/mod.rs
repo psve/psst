@@ -3,7 +3,9 @@ use std::time::Duration;
 use druid::{
     im::Vector,
     lens::Unit,
-    widget::{CrossAxisAlignment, Either, Flex, Label, List, Scroll, Slider, Split, ViewSwitcher},
+    widget::{
+        Button, CrossAxisAlignment, Either, Flex, Label, List, Scroll, Slider, Split, ViewSwitcher,
+    },
     Color, Env, Insets, Key, LensExt, Menu, MenuItem, Selector, Widget, WidgetExt, WindowDesc,
 };
 
@@ -128,6 +130,9 @@ fn root_widget() -> impl Widget<AppState> {
         .must_fill_main_axis(true)
         .with_child(topbar_back_button_widget())
         .with_child(topbar_title_widget())
+        .with_flex_spacer(1.0)
+        .with_child(topbar_sort_widget())
+        .with_default_spacer()
         .background(Border::Bottom.with_color(theme::BACKGROUND_DARK));
 
     let main = Flex::column()
@@ -377,6 +382,29 @@ fn topbar_title_widget() -> impl Widget<AppState> {
         .with_spacer(theme::grid(0.5))
         .with_child(route_icon_widget())
         .lens(AppState::nav)
+}
+
+fn topbar_sort_widget() -> impl Widget<AppState> {
+    let sort_artist = Button::new("Sort by Artist").on_click(|_, state: &mut AppState, _| {
+        state.with_library_mut(|library| {
+            if let Some(saved) = library.saved_albums.resolved_mut() {
+                saved.sort_by_artist();
+            }
+        });
+    });
+    let sort_date = Button::new("Sort by Date").on_click(|_, state: &mut AppState, _| {
+        state.with_library_mut(|library| {
+            if let Some(saved) = library.saved_albums.resolved_mut() {
+                saved.sort_by_date();
+            }
+        });
+    });
+
+    Either::new(
+        |state: &AppState, _| state.nav == Nav::SavedAlbums,
+        Flex::row().with_child(sort_artist).with_child(sort_date),
+        Empty,
+    )
 }
 
 fn route_icon_widget() -> impl Widget<Nav> {

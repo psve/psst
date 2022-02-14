@@ -410,7 +410,29 @@ pub struct SavedAlbums {
 impl SavedAlbums {
     pub fn new(albums: Vector<Arc<Album>>) -> Self {
         let set = albums.iter().map(|a| a.id.clone()).collect();
-        Self { albums, set }
+        let mut saved_albums = Self { albums, set };
+        saved_albums.sort_by_artist();
+        saved_albums
+    }
+
+    pub fn sort_by_artist(&mut self) {
+        self.albums.sort_by(|a, b| {
+            let a_name = &a.artists[0].name;
+            let b_name = &b.artists[0].name;
+            let a_date = a.release_date;
+            let b_date = b.release_date;
+            a_name.cmp(b_name).then(a_date.cmp(&b_date).reverse())
+        })
+    }
+
+    pub fn sort_by_date(&mut self) {
+        self.albums.sort_by(|a, b| {
+            let a_name = &a.artists[0].name;
+            let b_name = &b.artists[0].name;
+            let a_date = a.release_date;
+            let b_date = b.release_date;
+            a_date.cmp(&b_date).reverse().then(a_name.cmp(b_name))
+        })
     }
 }
 
