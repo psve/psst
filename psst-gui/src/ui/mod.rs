@@ -6,7 +6,8 @@ use druid::{
     widget::{
         Button, CrossAxisAlignment, Either, Flex, Label, List, Scroll, Slider, Split, ViewSwitcher,
     },
-    Color, Env, Insets, Key, LensExt, Menu, MenuItem, Selector, Widget, WidgetExt, WindowDesc,
+    Color, Env, EventCtx, Insets, Key, LensExt, Menu, MenuItem, Selector, Widget, WidgetExt,
+    WindowDesc,
 };
 
 use crate::{
@@ -131,6 +132,7 @@ fn root_widget() -> impl Widget<AppState> {
         .with_child(topbar_back_button_widget())
         .with_child(topbar_title_widget())
         .with_flex_spacer(1.0)
+        .with_child(topbar_random_album_widget())
         .with_child(topbar_sort_widget())
         .with_default_spacer()
         .background(Border::Bottom.with_color(theme::BACKGROUND_DARK));
@@ -403,6 +405,23 @@ fn topbar_sort_widget() -> impl Widget<AppState> {
     Either::new(
         |state: &AppState, _| state.nav == Nav::SavedAlbums,
         Flex::row().with_child(sort_artist).with_child(sort_date),
+        Empty,
+    )
+}
+
+fn topbar_random_album_widget() -> impl Widget<AppState> {
+    let random_album_button =
+        Button::new("Random Album").on_click(|ctx: &mut EventCtx, state: &mut AppState, _| {
+            if let Some(albums) = state.library.saved_albums.resolved() {
+                if let Some(album) = albums.random_album() {
+                    ctx.submit_command(cmd::NAVIGATE.with(Nav::AlbumDetail(album.link())))
+                }
+            }
+        });
+
+    Either::new(
+        |state: &AppState, _| state.nav == Nav::SavedAlbums,
+        random_album_button,
         Empty,
     )
 }

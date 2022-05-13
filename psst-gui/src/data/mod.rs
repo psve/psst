@@ -8,6 +8,7 @@ mod nav;
 mod playback;
 mod playlist;
 mod promise;
+use rand::Rng;
 mod recommend;
 mod search;
 mod show;
@@ -433,6 +434,11 @@ impl SavedAlbums {
             let b_date = b.release_date;
             a_date.cmp(&b_date).reverse().then(a_name.cmp(b_name))
         })
+    }
+
+    pub fn random_album(&self) -> Option<&Arc<Album>> {
+        let idx = rand::thread_rng().gen_range(0..self.albums.len());
+        self.albums.get(idx)
     }
 }
 
